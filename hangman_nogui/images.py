@@ -86,7 +86,8 @@ HANGMAN_IMAGES = {
    │    /│\\
    │    / \\
    │
-───┴─── GAME OVER!
+───┴─── 
+GAME OVER!
 """),
 }
 
@@ -116,12 +117,12 @@ def get_victory_image() -> str:
     return _format_art("""
 🎉 VICTORY! 🎉
 
-      ┌─────┐
-      │
-      │   \\o/
-      │    │
-      │   / \\
-      │
+   ┌─────┐
+   │
+   │   \\o/
+   │    │
+   │   / \\
+   │
 ───┴───
 
 You saved the day!

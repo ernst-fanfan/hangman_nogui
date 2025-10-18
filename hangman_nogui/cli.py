@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import subprocess
+import sys
 from functools import lru_cache
 from random import choice
 from typing import Any, Callable, Sequence
@@ -40,7 +42,23 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default="web2",
         help="Dictionary name to draw random words from (default: web2).",
     )
-    return parser.parse_args(argv)
+    parser.add_argument(
+        "--auto-close-terminal",
+        dest="auto_close_terminal",
+        action="store_true",
+        help="Close the console/terminal window when the game ends.",
+    )
+    parser.add_argument(
+        "--keep-terminal-open",
+        dest="auto_close_terminal",
+        action="store_false",
+        help="Prevent the terminal window from closing automatically on exit.",
+    )
+    parser.set_defaults(auto_close_terminal=None)
+    args = parser.parse_args(argv)
+    if args.auto_close_terminal is None:
+        args.auto_close_terminal = bool(getattr(sys, "frozen", False))
+    return args
 
 
 @lru_cache(maxsize=None)
@@ -64,6 +82,7 @@ def build_game(
         "attempts_left": 6,
         "guess": "",
         "input_func": input_func,
+        "quit_requested": False,
     }
 
 
@@ -112,7 +131,7 @@ def display_screen(game: dict[str, Any]) -> None:
             Align.center(hangman_text, vertical="middle"),
             title="Hangman",
             style=hangman_style,
-            expand=False,
+            expand=True,
         )
     )
 
@@ -147,6 +166,7 @@ def process_guess(game: dict[str, Any]) -> None:
     if guess == "quit":
         game["is_running"] = False
         console.print("\n[bold red]Thanks for playing![/bold red]")
+        game["quit_requested"] = True
         return
 
     if len(guess) != 1 or not guess.isalpha():
@@ -172,26 +192,69 @@ def process_guess(game: dict[str, Any]) -> None:
         console.print(
             f"\n[bold green]🎉 Congratulations! You've guessed the word: {game['word_to_guess'].upper()}[/bold green]"
         )
-        console.print(Panel(Text(get_victory_image(), justify="center"), title="VICTORY!", style="bold green"))
+        hangman_text = Text(get_victory_image(), no_wrap=True)
+        console.print(Panel(Align.center(hangman_text, vertical="middle"), title="VICTORY!", style="bold green"))
         game["is_running"] = False
     elif game["attempts_left"] <= 0:
         console.print(f"\n[bold red]💀 Game over! The word was: {game['word_to_guess'].upper()}[/bold red]")
-        console.print(Panel(Text(get_hangman_image(-1), justify="center"), title="GAME OVER", style="bold red"))
+        hangman_text = Text(get_hangman_image(-1), no_wrap=True)
+        console.print(Panel(Align.center(hangman_text, vertical="middle"), title="GAME OVER", style="bold red"))
         game["is_running"] = False
 
     if game["is_running"]:
         game["input_func"]("Press Enter to continue...")
 
 
+def _close_terminal_if_requested(enabled: bool) -> None:
+    if not enabled:
+        return
+    try:
+        if sys.platform == "darwin":
+            subprocess.run(
+                [
+                    "osascript",
+                    "-e",
+                    'tell application "Terminal" to close (every window whose frontmost is true)',
+                ],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        elif sys.platform.startswith("win"):
+            import ctypes
+
+            hwnd = ctypes.windll.kernel32.GetConsoleWindow()  # type: ignore[attr-defined]
+            if hwnd:
+                ctypes.windll.user32.PostMessageW(hwnd, 0x0010, 0, 0)  # type: ignore[attr-defined]
+    except Exception:
+        pass
+
+
 def main(argv: Sequence[str] | None = None, *, input_func: Callable[[str], str] = input) -> int:
     args = parse_args(argv)
 
     build_registry()
-    game = build_game(word=args.word, word_set=args.word_set, input_func=input_func)
-    while game["is_running"]:
-        run(_FUNCTIONS["display screen"], game)
-        game["guess"] = input_func("Enter your guess: ")
-        run(_FUNCTIONS["process guess"], game)
+    while True:
+        game = build_game(word=args.word, word_set=args.word_set, input_func=input_func)
+        while game["is_running"]:
+            run(_FUNCTIONS["display screen"], game)
+            game["guess"] = input_func("Enter your guess: ")
+            run(_FUNCTIONS["process guess"], game)
+
+        if game.get("quit_requested") or args.word:
+            break
+
+        while True:
+            response = input_func("Play again? (y/n): ").strip().lower()
+            if response in {"y", "yes"}:
+                console.print("\n[bold cyan]Starting a new game![/bold cyan]")
+                break
+            if response in {"n", "no"}:
+                _close_terminal_if_requested(args.auto_close_terminal)
+                return 0
+            console.print("[bold red]Please answer with 'y' or 'n'.[/bold red]")
+
+    _close_terminal_if_requested(args.auto_close_terminal)
     return 0
 
 
