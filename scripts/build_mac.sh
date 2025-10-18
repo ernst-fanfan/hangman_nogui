@@ -11,6 +11,17 @@ DMG_NAME="${APP_NAME}.dmg"
 rm -rf "$DIST_ROOT" "$BUILD_ROOT"
 mkdir -p "$DIST_ROOT"
 
+if [[ -f "$DIST_ROOT/$DMG_NAME" ]]; then
+  echo "Removing existing disk image at $DIST_ROOT/$DMG_NAME"
+  rm -f "$DIST_ROOT/$DMG_NAME"
+fi
+
+VOL_PATH="/Volumes/$APP_NAME"
+if mount | grep -q "$VOL_PATH"; then
+  echo "Unmounting $VOL_PATH"
+  hdiutil detach "$VOL_PATH" || true
+fi
+
 python3 -m PyInstaller \
   "$ROOT/scripts/run_hangman.py" \
   --name "$APP_NAME" \
