@@ -10,7 +10,7 @@ $AppName = "Hangman"
 Remove-Item $DistRoot, $BuildRoot -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $DistRoot | Out-Null
 
-py -3 -m PyInstaller `
+python -m PyInstaller `
     (Join-Path $Root "scripts/run_hangman.py") `
     --name $AppName `
     --onefile `
