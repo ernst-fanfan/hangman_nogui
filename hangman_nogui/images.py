@@ -3,6 +3,8 @@ ASCII Hangman Images for different game states.
 Each image corresponds to the number of wrong guesses (6 total attempts).
 """
 
+from __future__ import annotations
+
 import inspect
 import textwrap
 
@@ -11,78 +13,79 @@ def _format_art(block: str) -> str:
     """Normalize indentation so ASCII art renders consistently."""
     return textwrap.indent(inspect.cleandoc(block), "   ")
 
+
 # Hangman stages from 0 wrong guesses to 6 wrong guesses (game over)
 HANGMAN_IMAGES = {
     6: _format_art("""
-   ┌─────┐
-   │
-   │
-   │
-   │
-   │
+┌─────┐
+│
+│
+│
+│
+│
 ───┴───
 """),
     5: _format_art("""
-   ┌─────┐
-   │     │
-   │
-   │
-   │
-   │
+┌─────┐
+│     │
+│
+│
+│
+│
 ───┴───
 """),
     4: _format_art("""
-   ┌─────┐
-   │     │
-   │     O
-   │
-   │
-   │
+┌─────┐
+│     │
+│     O
+│
+│
+│
 ───┴───
 """),
     3: _format_art("""
-   ┌─────┐
-   │     │
-   │     O
-   │     │
-   │
-   │
+┌─────┐
+│     │
+│     O
+│     │
+│
+│
 ───┴───
 """),
     2: _format_art("""
-   ┌─────┐
-   │     │
-   │     O
-   │    /│
-   │
-   │
+┌─────┐
+│     │
+│     O
+│    /│
+│
+│
 ───┴───
 """),
     1: _format_art("""
-   ┌─────┐
-   │     │
-   │     O
-   │    /│\\
-   │
-   │
+┌─────┐
+│     │
+│     O
+│    /│\\
+│
+│
 ───┴───
 """),
     0: _format_art("""
-   ┌─────┐
-   │     │
-   │     O
-   │    /│\\
-   │    /
-   │
+┌─────┐
+│     │
+│     O
+│    /│\\
+│    /
+│
 ───┴───
 """),
     -1: _format_art("""
-   ┌─────┐
-   │     │
-   │     X
-   │    /│\\
-   │    / \\
-   │
+┌─────┐
+│     │
+│     X
+│    /│\\
+│    / \\
+│
 ───┴─── GAME OVER!
 """),
 }

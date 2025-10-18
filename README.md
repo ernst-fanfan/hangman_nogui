@@ -12,7 +12,7 @@ hangman
 ## Development
 
 - Requires Python 3.10+
-- Install dependencies with `pip install -r requirements.txt` or `pip install -e .`
-- Run the game with `python -m hangman` or the `hangman` console script.
+- Install dependencies with `pip install -e .`
+- Run the game with `python -m hangman_nogui` or the `hangman` console script.
 
 Have fun saving the stick figure!

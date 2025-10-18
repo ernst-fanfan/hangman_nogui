@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-hangman = "hangman:main"
+hangman = "hangman_nogui.cli:main"
 
-[tool.setuptools]
-py-modules = ["hangman", "images"]
+[tool.setuptools.packages.find]
+include = ["hangman_nogui*"]
