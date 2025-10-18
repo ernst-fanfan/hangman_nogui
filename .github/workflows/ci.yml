@@ -43,6 +43,11 @@ jobs:
           chmod +x scripts/build_mac.sh
           ./scripts/build_mac.sh
 
+      - name: Install PyInstaller for Windows python launcher
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 -m pip install --upgrade pip pyinstaller
+
       - name: Build Windows executable
         if: runner.os == 'Windows'
         shell: pwsh
