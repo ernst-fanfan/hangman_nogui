@@ -138,10 +138,14 @@ def process_guess(game: dict[str, Any]) -> None:
     if game["is_running"]:
         input("Press Enter to continue...")
 
-if __name__ == "__main__":
+def main() -> None:
     build_registry()
     game = build_game()
     while game["is_running"]:
         run(_["display screen"], game)
         game["guess"] = input("Enter your guess: ")
         run(_["process guess"], game)
+
+
+if __name__ == "__main__":
+    main()
